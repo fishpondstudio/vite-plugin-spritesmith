@@ -1,5 +1,5 @@
-import glob from 'glob';
 import gaze from 'gaze';
+import glob from 'glob';
 import path from 'path';
 import compile from './lib/compile';
 import processOptions from './lib/processOption';
@@ -8,15 +8,11 @@ const handler = (customOptions) => {
   const options = processOptions(customOptions);
   const { src, watch } = options;
   const init = () => {
-    glob(path.posix.join(src.cwd, src.glob), (err, files) => {
+    glob(path.join(src.cwd, src.glob), (err, files) => {
       if (err) {
         throw err;
       }
-      compile(
-        files,
-        options,
-        'retina' in options
-      );
+      compile(files, options, 'retina' in options);
     });
   };
   init();

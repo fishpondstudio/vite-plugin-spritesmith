@@ -2,7 +2,8 @@
   "name": "vite-plugin-spritesmith",
   "version": "0.1.0",
   "description": "vite plugin that converts set of images into sprites",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -w -c"
