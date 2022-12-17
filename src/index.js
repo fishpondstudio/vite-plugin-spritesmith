@@ -8,7 +8,7 @@ const handler = (customOptions) => {
   const options = processOptions(customOptions);
   const { src, watch } = options;
   const init = () => {
-    glob(path.join(src.cwd, src.glob), (err, files) => {
+    glob(path.posix.join(src.cwd, src.glob), (err, files) => {
       if (err) {
         throw err;
       }

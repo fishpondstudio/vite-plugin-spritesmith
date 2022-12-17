@@ -365,7 +365,7 @@ const handler = (customOptions) => {
   const options = processOptions(customOptions);
   const { src, watch } = options;
   const init = () => {
-    glob__default['default'](path__default['default'].join(src.cwd, src.glob), (err, files) => {
+    glob__default['default'](path__default['default'].posix.join(src.cwd, src.glob), (err, files) => {
       if (err) {
         throw err;
       }
