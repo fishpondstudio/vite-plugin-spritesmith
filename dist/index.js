@@ -3,9 +3,9 @@
 var gaze = require('gaze');
 var glob = require('glob');
 var path = require('path');
-var spritesmith$1 = require('spritesmith');
 var _ = require('lodash');
 var templater = require('spritesheet-templates');
+var spritesmith$1 = require('spritesmith');
 var mkdirp = require('mkdirp');
 var fs = require('fs-extra');
 
@@ -14,9 +14,9 @@ function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'defau
 var gaze__default = /*#__PURE__*/_interopDefaultLegacy(gaze);
 var glob__default = /*#__PURE__*/_interopDefaultLegacy(glob);
 var path__default = /*#__PURE__*/_interopDefaultLegacy(path);
-var spritesmith__default = /*#__PURE__*/_interopDefaultLegacy(spritesmith$1);
 var ___default = /*#__PURE__*/_interopDefaultLegacy(_);
 var templater__default = /*#__PURE__*/_interopDefaultLegacy(templater);
+var spritesmith__default = /*#__PURE__*/_interopDefaultLegacy(spritesmith$1);
 var mkdirp__default = /*#__PURE__*/_interopDefaultLegacy(mkdirp);
 var fs__default = /*#__PURE__*/_interopDefaultLegacy(fs);
 
@@ -41,158 +41,159 @@ const sendToPast = (fileName, bypass) => {
 };
 
 const writeCss = async (sources, templaterData) => {
-  return await Promise.all(
-    sources.map(async (css) => {
-      const fileName = css[0];
-      const code = templater__default['default'](templaterData, css[1]);
-      await writeFileR(fileName, code);
-      await sendToPast(fileName);
+	return await Promise.all(
+		sources.map(async (css) => {
+			const fileName = css[0];
+			const code = templater__default['default'](templaterData, css[1]);
+			await writeFileR(fileName, code);
+			await sendToPast(fileName);
 
-      return fileName;
-    })
-  );
+			return fileName;
+		}),
+	);
 };
 const spriteSheetFormat = (spritesmithResult, options) => {
-  const generateSpriteName = (fileName) => {
-    return path__default['default'].parse(path__default['default'].relative(options.src.cwd, fileName)).name;
-  };
-  const sprites = ___default['default'].map(
-    spritesmithResult.coordinates,
-    function (oneSourceInfo, fileName) {
-      return ___default['default'].assign({ name: generateSpriteName(fileName) }, oneSourceInfo);
-    }
-  );
-  const spritesheet = ___default['default'].assign(
-    { image: options.apiOptions.cssImageRef },
-    spritesmithResult.properties
-  );
+	const generateSpriteName = options.apiOptions.generateSpriteName
+		? options.apiOptions.generateSpriteName
+		: (fileName) => {
+				return path__default['default'].parse(path__default['default'].relative(options.src.cwd, fileName)).name;
+		  };
+	const sprites = ___default['default'].map(
+		spritesmithResult.coordinates,
+		(oneSourceInfo, fileName) =>
+			___default['default'].assign({ name: generateSpriteName(fileName) }, oneSourceInfo),
+	);
+	const spritesheet = ___default['default'].assign(
+		{ image: options.apiOptions.cssImageRef },
+		spritesmithResult.properties,
+	);
 
-  return {
-    sprites: sprites,
-    spritesheet: spritesheet,
-    spritesheet_info: options.apiOptions.spritesheet_info,
-  };
+	return {
+		sprites: sprites,
+		spritesheet: spritesheet,
+		spritesheet_info: options.apiOptions.spritesheet_info,
+	};
 };
 
 const compileNormal = (files, options) => {
-  const { target } = options;
-  spritesmith__default['default'].run(
-    ___default['default'].merge({}, { src: files }, options.spritesmithOptions),
-    (err, result) => {
-      if (err) {
-        throw err;
-      }
-      const spritesheetTemplatesData = spriteSheetFormat(result, options);
-      // write the sprite image file and stylesheet
-      Promise.all([
-        writeFileR(target.image, result.image, 'binary'),
-        writeCss(target.css, spritesheetTemplatesData),
-      ]);
-    }
-  );
+	const { target } = options;
+	spritesmith__default['default'].run(
+		___default['default'].merge({}, { src: files }, options.spritesmithOptions),
+		(err, result) => {
+			if (err) {
+				throw err;
+			}
+			const spritesheetTemplatesData = spriteSheetFormat(result, options);
+			// write the sprite image file and stylesheet
+			Promise.all([
+				writeFileR(target.image, result.image, "binary"),
+				writeCss(target.css, spritesheetTemplatesData),
+			]);
+		},
+	);
 };
 
 function getSpritesForSpritesheetTemplates(
-  combinedSources,
-  prefix,
-  field,
-  sourceField
+	combinedSources,
+	prefix,
+	field,
+	sourceField,
 ) {
-  return ___default['default'].map(combinedSources, (sprite) => ({
-    name: prefix + sprite.apiName,
-    source_image: sprite[sourceField],
-    x: sprite[field].x,
-    y: sprite[field].y,
-    width: sprite[field].width,
-    height: sprite[field].height,
-  }));
+	return ___default['default'].map(combinedSources, (sprite) => ({
+		name: prefix + sprite.apiName,
+		source_image: sprite[sourceField],
+		x: sprite[field].x,
+		y: sprite[field].y,
+		width: sprite[field].width,
+		height: sprite[field].height,
+	}));
 }
 
 const compileRetina = async (files, options) => {
-  const { src, target, retina, apiOptions, spritesmithOptions } = options;
-  const sourceRecords = files.map((fileName) => {
-    const oneRecord = retina.classifier(path__default['default'].resolve(src.cwd, fileName));
-    return {
-      ...oneRecord,
-      apiName: apiOptions.generateSpriteName(oneRecord.normalName),
-    };
-  });
+	const { src, target, retina, apiOptions, spritesmithOptions } = options;
+	const sourceRecords = files.map((fileName) => {
+		const oneRecord = retina.classifier(path__default['default'].resolve(src.cwd, fileName));
+		return {
+			...oneRecord,
+			apiName: apiOptions.generateSpriteName(oneRecord.normalName),
+		};
+	});
 
-  const combinedSources = ___default['default'].map(
-    ___default['default'].groupBy(sourceRecords, 'apiName'),
-    (group) => {
-      const result = ___default['default'].clone(group[0]);
-      group.forEach((oneRecord) => {
-        result[oneRecord.type] = true;
-      });
-      return result;
-    }
-  );
+	const combinedSources = ___default['default'].map(
+		___default['default'].groupBy(sourceRecords, "apiName"),
+		(group) => {
+			const result = ___default['default'].clone(group[0]);
+			group.forEach((oneRecord) => {
+				result[oneRecord.type] = true;
+			});
+			return result;
+		},
+	);
 
-  const results = await Promise.all([
-    promiseCall(
-      spritesmith__default['default'].run.bind(spritesmith__default['default'], {
-        ...spritesmithOptions,
-        src: ___default['default'].map(combinedSources, 'normalName'),
-      })
-    ),
-    promiseCall(
-      spritesmith__default['default'].run.bind(spritesmith__default['default'], {
-        ...spritesmithOptions,
-        src: ___default['default'].map(combinedSources, 'retinaName'),
-        padding: (spritesmithOptions.padding || 0) * 2,
-      })
-    ),
-  ]);
+	const results = await Promise.all([
+		promiseCall(
+			spritesmith__default['default'].run.bind(spritesmith__default['default'], {
+				...spritesmithOptions,
+				src: ___default['default'].map(combinedSources, "normalName"),
+			}),
+		),
+		promiseCall(
+			spritesmith__default['default'].run.bind(spritesmith__default['default'], {
+				...spritesmithOptions,
+				src: ___default['default'].map(combinedSources, "retinaName"),
+				padding: (spritesmithOptions.padding || 0) * 2,
+			}),
+		),
+	]);
 
-  combinedSources.forEach((oneSource) => {
-    oneSource.normalCoordinates = results[0].coordinates[oneSource.normalName];
-    oneSource.retinaCoordinates = results[1].coordinates[oneSource.retinaName];
-  });
+	combinedSources.forEach((oneSource) => {
+		oneSource.normalCoordinates = results[0].coordinates[oneSource.normalName];
+		oneSource.retinaCoordinates = results[1].coordinates[oneSource.retinaName];
+	});
 
-  const normalSprites = getSpritesForSpritesheetTemplates(
-    combinedSources,
-    '',
-    'normalCoordinates',
-    'normalName'
-  );
-  const retinaSprites = getSpritesForSpritesheetTemplates(
-    combinedSources,
-    'retina_',
-    'retinaCoordinates',
-    'retinaName'
-  );
+	const normalSprites = getSpritesForSpritesheetTemplates(
+		combinedSources,
+		"",
+		"normalCoordinates",
+		"normalName",
+	);
+	const retinaSprites = getSpritesForSpritesheetTemplates(
+		combinedSources,
+		"retina_",
+		"retinaCoordinates",
+		"retinaName",
+	);
 
-  const spritesheetTemplatesData = {
-    retina_spritesheet_info: apiOptions.retina_spritesheet_info,
-    sprites: normalSprites,
-    spritesheet: {
-      width: results[0].properties.width,
-      height: results[0].properties.height,
-      image: apiOptions.cssImageRef,
-    },
-    retina_sprites: retinaSprites,
-    retina_spritesheet: {
-      width: results[1].properties.width,
-      height: results[1].properties.height,
-      image: retina.cssImageRef,
-    },
-    retina_groups: combinedSources.map((sprite, i) => ({
-      name: sprite.apiName,
-      index: i,
-    })),
-  };
+	const spritesheetTemplatesData = {
+		retina_spritesheet_info: apiOptions.retina_spritesheet_info,
+		sprites: normalSprites,
+		spritesheet: {
+			width: results[0].properties.width,
+			height: results[0].properties.height,
+			image: apiOptions.cssImageRef,
+		},
+		retina_sprites: retinaSprites,
+		retina_spritesheet: {
+			width: results[1].properties.width,
+			height: results[1].properties.height,
+			image: retina.cssImageRef,
+		},
+		retina_groups: combinedSources.map((sprite, i) => ({
+			name: sprite.apiName,
+			index: i,
+		})),
+	};
 
-  Promise.all([
-    writeFileR(target.image, results[0].image, 'binary'),
-    writeFileR(retina.targetImage, results[1].image, 'binary'),
-    writeCss(target.css, spritesheetTemplatesData),
-  ]);
+	Promise.all([
+		writeFileR(target.image, results[0].image, "binary"),
+		writeFileR(retina.targetImage, results[1].image, "binary"),
+		writeCss(target.css, spritesheetTemplatesData),
+	]);
 };
 
 const compile = (files, options, useRetina = false) => {
-  let compileStrategy = useRetina ? compileRetina : compileNormal;
-  compileStrategy(files, options);
+	const compileStrategy = useRetina ? compileRetina : compileNormal;
+	compileStrategy(files, options);
 };
 
 const MINE_TYPES = {
